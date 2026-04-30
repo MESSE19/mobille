@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mobile POS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #00F0FF;
+            --primary-hover: #5cf5ff;
+            --secondary: #3A86FF;
+            --danger: #FF4D6D;
+            --success: #00FFAA;
+            --bg-main: #0A0F1D;
+            --bg-card: #12192D;
+            --text-main: #F0F4FF;
+            --text-muted: #A0B0D0;
+            --radius: 8px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-main); color: var(--text-main); overflow-x: hidden; }
+        
+        .hidden { display: none !important; }
+        .w-100 { width: 100%; }
+        
+        input, select {
+            width: 100%; padding: 14px; border-radius: var(--radius);
+            background: rgba(255,255,255,0.05); color: #fff;
+            border: 1px solid rgba(0,240,255,0.3); outline: none; font-size: 16px;
+        }
+        input:focus, select:focus { border-color: var(--primary); }
+        
+        button {
+            border: none; padding: 14px; border-radius: var(--radius);
+            font-size: 16px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-primary { background: var(--primary); color: #000; }
+        .btn-secondary { background: var(--secondary); color: #fff; }
+        .btn-danger { background: var(--danger); color: #fff; }
+
+        /* Login Screen */
+        #login-screen {
+            position: fixed; top:0; left:0; right:0; bottom:0; background: var(--bg-main);
+            display: flex; flex-direction: column; justify-content: center; padding: 20px; z-index: 999;
+        }
+        .login-card { background: var(--bg-card); padding: 30px 20px; border-radius: 12px; border: 1px solid rgba(0,240,255,0.2); }
+        .login-card h1 { color: var(--primary); text-align: center; margin-bottom: 24px; font-size: 28px;}
+        .input-group { margin-bottom: 16px; }
+        .input-group label { display: block; font-size: 14px; color: var(--text-muted); margin-bottom: 6px; }
+
+        /* App Layout */
+        #app-layout { padding-bottom: 80px; }
+        header { background: var(--bg-card); padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10;}
+        header h2 { font-size: 18px; color: var(--primary); margin:0;}
+        .user-chip { font-size: 12px; color: var(--text-muted); display:flex; align-items:center; gap:4px;}
+
+        /* Search & Filters */
+        .filters { padding: 15px; position: sticky; top: 54px; background: var(--bg-main); z-index: 9; }
+        .category-scroll { display: flex; overflow-x: auto; gap: 8px; margin-top: 10px; padding-bottom: 5px; }
+        .pill { padding: 8px 16px; border-radius: 20px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; white-space: nowrap; font-size: 14px; }
+        .pill.active { background: rgba(0,240,255,0.15); border-color: var(--primary); color: var(--primary); }
+
+        /* Product Grid */
+        .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 15px 15px 15px; }
+        .ptile { background: var(--bg-card); border-radius: 10px; padding: 12px; border: 1px solid rgba(255,255,255,0.05); display:flex; flex-direction:column; justify-content:space-between;}
+        .ptile.out { opacity: 0.5; pointer-events: none; }
+        .ptile-name { font-size: 14px; margin-bottom: 4px; font-weight: 500; }
+        .ptile-price { font-size: 15px; color: var(--success); font-weight: 600; margin-bottom: 8px;}
+        .ptile-stock { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; }
+        .add-btn { background: rgba(0,240,255,0.1); color: var(--primary); border: 1px solid var(--primary); padding: 8px; border-radius: 6px; font-size: 14px; width: 100%;}
+
+        /* Cart Bar */
+        .cart-bar {
+            position: fixed; bottom: 0; left: 0; right: 0; background: var(--primary); padding: 15px;
+            display: flex; justify-content: space-between; align-items: center; z-index: 100;
+            box-shadow: 0 -4px 15px rgba(0,240,255,0.2); cursor: pointer;
+        }
+        .cart-bar-info { color: #000; font-weight: 700; font-size: 18px; }
+        .cart-bar-btn { color: #000; font-weight: 600; display:flex; align-items:center; gap:6px;}
+
+        /* Cart Modal */
+        #cart-modal {
+            position: fixed; top:0; left:0; right:0; bottom:0; background: var(--bg-main); z-index: 1000;
+            display: flex; flex-direction: column;
+            transform: translateY(100%); transition: transform 0.3s ease-out;
+        }
+        #cart-modal.open { transform: translateY(0); }
+        
+        .cart-header { padding: 15px; background: var(--bg-card); border-bottom: 1px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; align-items:center; }
+        .cart-items { flex: 1; overflow-y: auto; padding: 15px; display:flex; flex-direction:column; gap:10px; }
+        .cart-item { background: var(--bg-card); padding: 12px; border-radius: 8px; display:flex; justify-content:space-between; align-items:center; }
+        .cart-item-name { font-size: 14px; margin-bottom:4px; }
+        .cart-item-price { font-size: 13px; color: var(--success); }
+        .cart-controls { display:flex; align-items:center; gap:12px; }
+        .qty-btn { background: rgba(255,255,255,0.1); color: #fff; width: 32px; height: 32px; padding:0; border-radius: 4px; }
+        
+        .cart-footer { padding: 20px; background: var(--bg-card); border-top: 1px solid rgba(255,255,255,0.1); }
+        .summary-row { display:flex; justify-content:space-between; margin-bottom: 10px; color: var(--text-muted); font-size: 14px;}
+        .summary-total { display:flex; justify-content:space-between; margin-bottom: 15px; color: #fff; font-size: 20px; font-weight: bold;}
+        
+        .payment-methods { display: flex; gap: 8px; margin-bottom: 15px; }
+        .pay-pill { flex: 1; text-align: center; }
+        .pay-pill input { display: none; }
+        .pay-pill span { display: block; padding: 10px 5px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; font-size: 13px; color: var(--text-muted); }
+        .pay-pill input:checked + span { background: rgba(0,240,255,0.15); border-color: var(--primary); color: var(--primary); font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen">
+        <div class="login-card">
+            <h1>Mobile POS</h1>
+            <form id="login-form">
+                <div class="input-group">
+                    <label>Server IP (Type 'cloud' for Direct Sync)</label>
+                    <input type="text" id="login-ip" placeholder="e.g. 192.168.1.50 or 'cloud'" value="cloud" required autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <label>Username</label>
+                    <input type="text" id="login-username" required autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="login-password" required>
+                </div>
+                <div class="input-group">
+                    <label>Campus</label>
+                    <select id="login-org" required>
+                        <option value="Premier">Premier</option>
+                        <option value="Foundation">Foundation</option>
+                        <option value="Eastview">Eastview</option>
+                        <option value="Johnson">Johnson</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary w-100" style="margin-top:20px;">LOGIN</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="app-layout" class="hidden">
+        <header>
+            <h2>POS</h2>
+            <div class="user-chip">
+                <i data-lucide="user" style="width:14px;height:14px;"></i> <span id="user-display">User</span>
+                <span id="campus-display" style="margin-left:8px; color:var(--primary);">Campus</span>
+            </div>
+        </header>
+
+        <div class="filters">
+            <input type="text" id="search-input" placeholder="Search products...">
+            <div class="category-scroll" id="categories">
+                <div class="pill active" data-cat="All">All</div>
+                <div class="pill" data-cat="Socks">Socks</div>
+                <div class="pill" data-cat="Skirts">Skirts</div>
+                <div class="pill" data-cat="Trousers">Trousers</div>
+                <div class="pill" data-cat="Blazers">Blazers</div>
+            </div>
+        </div>
+
+        <div class="product-grid" id="product-grid">
+            <!-- Injected via JS -->
+        </div>
+
+        <!-- Sticky Cart Bar -->
+        <div class="cart-bar hidden" id="cart-bar" onclick="toggleCart(true)">
+            <div class="cart-bar-info"><span id="cart-count">0</span> items</div>
+            <div class="cart-bar-btn">View Cart <span id="cart-bar-total">$0.00</span> <i data-lucide="chevron-up" style="width:18px;"></i></div>
+        </div>
+    </div>
+
+    <!-- CART MODAL -->
+    <div id="cart-modal">
+        <div class="cart-header">
+            <h2 style="font-size:18px;">Current Cart</h2>
+            <button style="background:transparent; padding:0; color:#fff;" onclick="toggleCart(false)"><i data-lucide="x"></i></button>
+        </div>
+        <div class="cart-items" id="cart-items">
+            <!-- Injected -->
+        </div>
+        <div class="cart-footer">
+            <div class="summary-row"><span>Subtotal</span><span id="cart-subtotal">$0.00</span></div>
+            <div class="summary-row"><span>Tax (0%)</span><span>$0.00</span></div>
+            <div class="summary-total"><span>Total</span><span class="text-primary" id="cart-total">$0.00</span></div>
+            
+            <div class="payment-methods">
+                <label class="pay-pill"><input type="radio" name="paymethod" value="Cash" checked><span>Cash</span></label>
+                <label class="pay-pill"><input type="radio" name="paymethod" value="Transfer"><span>Transfer</span></label>
+                <label class="pay-pill"><input type="radio" name="paymethod" value="EcoCash"><span>EcoCash</span></label>
+            </div>
+            
+            <button class="btn-primary w-100" id="checkout-btn"><i data-lucide="check-circle"></i> COMPLETE SALE</button>
+        </div>
+    </div>
+
+    <script src="mobile.js"></script>
+</body>
+</html>
