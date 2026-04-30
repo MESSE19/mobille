@@ -1,13 +1,24 @@
 {
   "background_color": "#ffffff",
-  "dir": "ltr",
+  "dir": "auto",
   "display": "standalone",
   "name": "uniforms sales",
   "orientation": "any",
-  "scope": "/",
+  "scope": "/https://messe19.github.io/mobille/",
   "short_name": "poszimsoft",
-  "start_url": "/",
+  "start_url": "/https://messe19.github.io/mobille/",
   "theme_color": "#ffffff",
   "id": "zimsofdev12",
-  "description": "this app wass developed by zimsoft designers studios +263777056345"
+  "description": "this app wass developed by zimsoft designers studios +263777056345",
+  "iarc_rating_id": "uniforms sales",
+  "prefer_related_applications": false,
+  "categories": [
+    "shopping"
+  ],
+  "lang": "sn",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "fullscreen"
+  ]
 }
